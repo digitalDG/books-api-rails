@@ -1,0 +1,133 @@
+These are my design notes to record the steps I followed when creating the Rails API app.
+
+
+Installed tools:
+---------------
+
+I was working on Windows laptop so I needed some tools installed:
+
+* Installed Rails using Install Rails Installer - http://installrails.com
+
+	I installed the latest Windows Ruby 2.1 version
+
+* For convenience I installed git on Windows so I could get the git-bash shell that makes working easier on Windows. https://git-scm.com/downloads
+
+* Installed SQL Lite Browser in order to view the databases tables and data. https://sqlitebrowser.org/
+
+NOTE: I decided to just use the default sql lite database for convenience. Data was small for this sample code app. I could have installed MySql. However I did not
+want to install extra tools such as XAMPP to get MySql, phpMyAdmin (for db management), etc. . I would have also had to add more gems for MySql. 
+
+* Installed Postman for REST API testing of the Books api. https://www.getpostman.com/apps
+
+
+Development Steps
+---------------------
+
+* Verified Rails install
+
+	$ rails -v
+	Rails 5.1.6
+
+	$ ruby -v
+	ruby 2.3.3p222 (2016-11-21 revision 56859) [i386-mingw32]
+
+* Created Rails api only application using rails cli
+
+	$ rails new book-api-rails --api
+
+* Change in to new created directory "book-api-rails"
+
+	$ cd book-api-rails
+
+* Test the basic Rails server install after app creation by running server
+
+	$ rails server
+	
+	Verified the server was running at http://localhost:3000 using browser
+	Verified the Rails welcome page was displayed
+
+* Install Faker gem that will be used to populate the database with some fake data
+	
+	https://github.com/stympy/faker
+	used Faker::Book
+
+	* Modified the Gemfile to add the Faker gem. I added to development group only section as it is only development related functionality
+	* Ran bundle install to update the project with the new gems added
+
+		$ bundle install
+
+* Create the database models for the api. In case I only have 1 model Books
+
+	$ rails g model Books title:string, author:string, publisher:string, genre:string
+
+   The database schema was determined basically by the attributes I wanted to use from Faker gem Faker::Book
+
+* Added some simple validation to the Book model to insure attributes exist and required. Modified book.rb file with model validation
+
+* Generated the database with the created migration file
+
+	$ rake db:migrate
+
+* Seeded the database with sample fake data using the Faker::Book gem. I create 10 Book records that consisted of title, author, publisher, genre
+
+	* Modified the seeds.rb file with a loop of 10 times calling the Faker::Book gem in order to create the Book model with data
+
+* Verified the database table and populated data using the Sql Lite Browser 
+
+* Created the routes that correspond to the typical CRUD operations (GET, POST, PUT, DELETE)
+
+	* Created the config/routes.db file
+		* I used namespaces of api and v1 in order to create the path /api/v1/books. This would allow easier future version updates to the api
+		* Used resources : books to generate all the default routes for typical CRUD
+
+		* Verified the routes generated
+
+			$ rake routes
+      Prefix Verb   URI Pattern                 Controller#Action
+api_v1_books GET    /api/v1/books(.:format)     api/v1/books#index
+             POST   /api/v1/books(.:format)     api/v1/books#create
+ api_v1_book GET    /api/v1/books/:id(.:format) api/v1/books#show
+             PATCH  /api/v1/books/:id(.:format) api/v1/books#update
+             PUT    /api/v1/books/:id(.:format) api/v1/books#update
+             DELETE /api/v1/books/:id(.:format) api/v1/books#destroy
+
+* Need to implement the Books controller to support the index, create, show, update, and destroy methods which correspond to the GET, POST, PUT/PATCH, and DELETE REST calls
+
+	* Manually created namespace directory to store controller file
+	* Generated the Books controller from the namespace directories
+		$ rails g controller Books
+	* Created the index, show, update, and destroy methods with the controller class
+
+* Tested each REST Api request using Postman
+
+	GET http://localhost:3000/api/v1/books		// This tests index method
+
+	GET http://localhost:3000/api/v1/books/4	// This tests show method
+	
+	POST http://localhost:3000/api/v1/books 	// This tests create method
+	     Body: {
+	"title": "TB12 Method",
+	"author": "Tom Brady",
+	"publisher": "Penguin Books",
+	"genre": "Self-Help"
+}
+
+	DELETE http://localhost:3000/api/v1/books/4	// This tests destroy method
+
+	PUT http://localhost:3000/api/v1/books/11	// This tests update method
+             Body: {
+	"title": "TB12 Method",
+	"author": "Tom Brady, Jr.",
+	"publisher": "Penguin Books",
+	"genre": "Self-Help"
+}
+
+NOTE: curl commands are another option for testing.
+
+
+NOTES: 
+I did not implement any authentication, tokens, etc. in order to keep things simple. Used simple data model without any associated relationships. 
+My intention was to show a very simple Rails based api. In addition I did not created any UI interface to use the API.
+	
+
+		
